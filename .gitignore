@@ -1,0 +1,22 @@
+# ── .NET Backend ─────────────────────────────────────────────
+EmployeeRegistry.API/bin/
+EmployeeRegistry.API/obj/
+EmployeeRegistry.API/appsettings.Development.json
+
+# ── React Frontend ────────────────────────────────────────────
+employee-registry-client/node_modules/
+employee-registry-client/dist/
+employee-registry-client/.env
+employee-registry-client/.env.local
+
+# ── OS & Editor ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.user
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+npm-debug.log*

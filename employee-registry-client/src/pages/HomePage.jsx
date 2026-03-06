@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { employeeApi } from '../api/employeeApi';
+import TopBar from '../components/TopBar';
 import SearchBar from '../components/SearchBar';
 import EmployeeTable from '../components/EmployeeTable';
 
@@ -11,24 +12,21 @@ export default function HomePage() {
   const [loading, setLoading]     = useState(true);
   const [search, setSearch]       = useState('');
   const [exporting, setExporting] = useState(false);
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const user      = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin   = user.role === 'Admin';
 
   const fetchEmployees = async (q = '') => {
     setLoading(true);
-    try {
-      const res = await employeeApi.getAll(q);
-      setEmployees(res.data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+    try { const res = await employeeApi.getAll(q); setEmployees(res.data); }
+    catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => { fetchEmployees(search); }, [search]);
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this employee?')) return;
+    if (!confirm('Are you sure you want to delete this employee record?')) return;
     await employeeApi.delete(id);
     fetchEmployees(search);
   };
@@ -36,57 +34,60 @@ export default function HomePage() {
   const handleExportPdf = async () => {
     setExporting(true);
     try {
-      const url = search
-        ? `${API_BASE}/employees/pdf?search=${encodeURIComponent(search)}`
-        : `${API_BASE}/employees/pdf`;
-      const res = await fetch(url);
+      const token = localStorage.getItem('token');
+      const url = search ? `${API_BASE}/employees/pdf?search=${encodeURIComponent(search)}` : `${API_BASE}/employees/pdf`;
+      const res  = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       const blob = await res.blob();
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = 'Employee_List.pdf';
       link.click();
-    } catch (e) {
-      alert(`Error:${e} Failed to export PDF.`);
-    } finally {
-      setExporting(false);
-    }
+    } catch { alert('Failed to export PDF.'); }
+    finally { setExporting(false); }
   };
 
   return (
-    <div style={{ padding: '32px 40px', maxWidth: 1200, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <TopBar />
 
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 10px var(--accent)' }} />
-          <span style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            Bangladesh Employee Registry
-          </span>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 40px' }}>
+
+        {/* Page header */}
+        <div style={{ marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Human Resources</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--navy)' }}>Employee Directory</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ fontSize: 12, color: 'var(--muted)', fontFamily: 'IBM Plex Mono, monospace' }}>
+                {employees.length} record{employees.length !== 1 ? 's' : ''}
+              </div>
+              <button className="btn-secondary" onClick={handleExportPdf} disabled={exporting}>
+                {exporting ? <span className="spinner" /> : '↓'} Export PDF
+              </button>
+              {isAdmin && (
+                <button className="btn-primary" onClick={() => navigate('/add')}>
+                  + New Employee
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-        <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.02em' }}>Employee Directory</h1>
+
+        {/* Search */}
+        <div style={{ marginBottom: 20 }}>
+          <SearchBar onSearch={setSearch} />
+        </div>
+
+        {/* Table */}
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 80, gap: 12 }}>
+            <span className="spinner" style={{ width: 24, height: 24 }} />
+            <span style={{ color: 'var(--muted)', fontSize: 13 }}>Loading records…</span>
+          </div>
+        ) : (
+          <EmployeeTable employees={employees} onDelete={handleDelete} isAdmin={isAdmin} />
+        )}
       </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <SearchBar onSearch={setSearch} />
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span style={{ color: 'var(--muted)', fontSize: 13 }}>
-            {employees.length} employee{employees.length !== 1 ? 's' : ''}
-          </span>
-          <button className="btn-ghost" onClick={handleExportPdf} disabled={exporting}
-            style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {exporting ? <span className="spinner" style={{ width: 14, height: 14 }} /> : '↓'}
-            Export PDF
-          </button>
-          <button className="btn-primary" onClick={() => navigate('/add')}>+ New Employee</button>
-        </div>
-      </div>
-
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-          <span className="spinner" style={{ width: 32, height: 32 }} />
-        </div>
-      ) : (
-        <EmployeeTable employees={employees} onDelete={handleDelete} />
-      )}
     </div>
   );
 }

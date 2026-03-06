@@ -170,3 +170,12 @@ F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\obj\Debug\net10.0\refint
 F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\obj\Debug\net10.0\EmployeeRegistry.API.pdb
 F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\obj\Debug\net10.0\EmployeeRegistry.API.genruntimeconfig.cache
 F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\obj\Debug\net10.0\ref\EmployeeRegistry.API.dll
+F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+F:\Projects\EmployeeFamilyRegistry\EmployeeRegistry.API\obj\Debug\net10.0\EmployeeRegistry.API.sourcelink.json

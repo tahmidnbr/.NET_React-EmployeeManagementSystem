@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { employeeApi } from '../api/employeeApi';
+import TopBar from '../components/TopBar';
 import EmployeeForm from '../components/EmployeeForm';
 
 export default function EditEmployeePage() {
@@ -20,48 +21,45 @@ export default function EditEmployeePage() {
         department:  emp.department,
         basicSalary: emp.basicSalary,
         spouse:      emp.spouse ? { name: emp.spouse.name, nid: emp.spouse.nid } : null,
-        children:    emp.children?.map(c => ({
-          name: c.name,
-          dateOfBirth: c.dateOfBirth?.slice(0, 10) ?? '',
-        })) || [],
+        children:    emp.children?.map(c => ({ name: c.name, dateOfBirth: c.dateOfBirth?.slice(0, 10) ?? '' })) || [],
       });
     });
   }, [id]);
 
   const handleSubmit = async (data) => {
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
       await employeeApi.update(id, data);
       navigate(`/employee/${id}`);
     } catch (e) {
       const msg = e.response?.data?.errors
         ? Object.values(e.response.data.errors).flat().join(', ')
-        : 'Failed to update employee.';
+        : e.response?.data?.message || 'Failed to update employee.';
       setError(msg);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   if (!initial) return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
-      <span className="spinner" style={{ width: 32, height: 32 }} />
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <TopBar />
+      <div style={{ display: 'flex', justifyContent: 'center', padding: 80, gap: 12 }}>
+        <span className="spinner" style={{ width: 24, height: 24 }} />
+        <span style={{ color: 'var(--muted)', fontSize: 13 }}>Loading…</span>
+      </div>
     </div>
   );
 
   return (
-    <div style={{ padding: '32px 40px', maxWidth: 800, margin: '0 auto' }}>
-      <button className="btn-ghost" onClick={() => navigate(-1)} style={{ marginBottom: 24 }}>
-        ← Back
-      </button>
-      <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 28 }}>Edit Employee</h1>
-      {error && (
-        <div style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid var(--danger)', borderRadius: 8, padding: '12px 16px', marginBottom: 20, color: 'var(--danger)', fontSize: 14 }}>
-          {error}
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <TopBar />
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 40px' }}>
+        <div style={{ marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6, cursor: 'pointer' }} onClick={() => navigate(-1)}>← Back</div>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--navy)' }}>Edit Employee Record</h1>
         </div>
-      )}
-      <EmployeeForm initial={initial} onSubmit={handleSubmit} loading={loading} />
+        {error && <div className="error-box" style={{ marginBottom: 20 }}>{error}</div>}
+        <EmployeeForm initial={initial} onSubmit={handleSubmit} loading={loading} />
+      </div>
     </div>
   );
 }

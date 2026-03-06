@@ -1,7 +1,11 @@
+using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using EmployeeRegistry.API.Data;          // ← AppDbContext lives here
+using Microsoft.IdentityModel.Tokens;
+using EmployeeRegistry.API.Auth;
+using EmployeeRegistry.API.Data;
 using EmployeeRegistry.API.Mappings;
 using EmployeeRegistry.API.Services;
 using EmployeeRegistry.API.Validators;
@@ -26,8 +30,28 @@ builder.Services.AddValidatorsFromAssemblyContaining<EmployeeValidator>();
 // ── Application Services ──────────────────────────────────────
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<PdfService>();
+builder.Services.AddScoped<JwtTokenService>();
 
-// ── Swagger / OpenAPI ─────────────────────────────────────────
+// ── JWT Authentication ────────────────────────────────────────
+var jwtKey = builder.Configuration["Jwt:Key"]!;
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer           = true,
+            ValidateAudience         = true,
+            ValidateLifetime         = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer              = builder.Configuration["Jwt:Issuer"],
+            ValidAudience            = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// ── Swagger ───────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -42,8 +66,8 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();          // runs any pending migrations
-    SeedData.Initialize(db);        // seeds 10 employees if empty
+    db.Database.Migrate();
+    SeedData.Initialize(db);
 }
 
 // ── Middleware Pipeline ───────────────────────────────────────
@@ -55,6 +79,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
